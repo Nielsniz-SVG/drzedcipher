@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr Zed Cipher</title>
+<style>
+body {
+  background: #0f0f0f;
+  color: #6df06d;
+  font-family: "Consolas", monospace;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+}
+textarea, #output {
+  width: 90%;
+  max-width: 600px;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
+  font-family: "Consolas", monospace;
+  font-size: 1em;
+}
+textarea {
+  height: 120px;
+  background: #1c1c1c;
+  color: #eaeaea;
+  border: 1px solid #444;
+  resize: none;
+}
+#output {
+  background: #181818;
+  border: 1px solid #333;
+  min-height: 80px;
+  white-space: pre-wrap;
+}
+button {
+  background: #6df06d;
+  border: none;
+  color: #111;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+button:hover { background: #4adc4a; }
+</style>
+</head>
+<body>
+
+<h1>🔐 Dr Zed Cipher</h1>
+<textarea id="input" placeholder="Écris ton message ici…"></textarea>
+<div>
+  <button id="encryptBtn">Chiffrer</button>
+  <button id="decryptBtn">Déchiffrer</button>
+  <button id="clearBtn">Effacer</button>
+</div>
+<div id="output"></div>
+
+<script>
+const LIST1 = "AbCdEfGhIjKlMnOpQrStUvWxYz".split("");
+const LIST2 = "@()/\\{}[]".split("");
+
+function posInAlphabet(ch){return ch.toLowerCase().charCodeAt(0)-96;}
+function findInList1(ch){let chLow=ch.toLowerCase();for(let i=0;i<LIST1.length;i++){if(LIST1[i].toLowerCase()===chLow)return i+1;}return posInAlphabet(ch);}
+function indexMod26(i){let r=i%26;return r===0?26:r;}
+
+function encrypt(){
+  const text=document.getElementById("input").value;
+  let cipher=[], nums=[], s=0;
+  for(let ch of text){
+    if(/[a-zA-Z]/.test(ch)){
+      let P=posInAlphabet(ch);
+      nums.push(P);
+      let start=findInList1(ch);
+      let newPos=indexMod26(start+P);
+      let cipherCh=LIST1[newPos-1];
+      let symbol=LIST2[s%LIST2.length];
+      cipher.push(cipherCh+symbol);
+      s++;
+    }
+  }
+  document.getElementById("output").textContent=cipher.reverse().join('')+'.'+nums.join('.');
+}
+
+function removeSymbols(s){for(let sym of LIST2)s=s.split(sym).join(''); return s;}
+function decrypt(){
+  const cipherText=document.getElementById("input").value.trim();
+  const parts=cipherText.split('.');
+  const nums=parts.slice(1).map(x=>parseInt(x)).filter(x=>!isNaN(x));
+  if(nums.length===0){document.getElementById("output").textContent="Erreur: aucun nombre detecté.";return;}
+  const plain=nums.map(n=>String.fromCharCode(96+n)).join('');
+  document.getElementById("output").textContent=plain;
+}
+function clearAll(){document.getElementById("input").value='';document.getElementById("output").textContent='';}
+
+document.getElementById("encryptBtn").addEventListener("click",encrypt);
+document.getElementById("decryptBtn").addEventListener("click",decrypt);
+document.getElementById("clearBtn").addEventListener("click",clearAll);
+</script>
+
+</body>
+</html>
